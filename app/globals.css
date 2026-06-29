@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* ================= BASE ================= */
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* Flame hover container - SIMPLE*/
+
+
+.flame-hover:hover .flame-icon {
+  stroke: #fb923c;
+  filter: drop-shadow(0 0 6px #fb923c) drop-shadow(0 0 12px #f97316);
+  animation: flameFlicker 0.4s infinite;
+}
+
+/* Flicker animation */
+@keyframes flameFlicker {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-1px) scale(1.08);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(1px) scale(0.98);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(-1px) scale(1.05);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Zap hover container - ELECTRIC */
+.zap-hover:hover .zap-icon {
+  stroke: #22d3ee; /* Tailwind Cyan 400 */
+  filter: drop-shadow(0 0 6px #22d3ee) drop-shadow(0 0 12px #0891b2);
+}
+
+/* Lightning flash animation */
+@keyframes zapFlash {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.15) rotate(6deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(0.9) rotate(-6deg);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.08) rotate(3deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Clock hover container - TIME FLOW */
+.clock-hover:hover .clock-icon {
+  stroke: #818cf8; 
+  filter: drop-shadow(0 0 6px #818cf8) drop-shadow(0 0 12px #4f46e5);
+}
+
+/* Animate only the hands, rotating perfectly around the center coordinate */
+.clock-hover:hover .clock-hands {
+  animation: clockTick 1.5s steps(12) infinite;
+  transform-origin: 12px 12px; 
+}
+
+/* Ticking animation */
+@keyframes clockTick {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
