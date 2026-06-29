@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { celebrate } from './fireworks';
 // --- Raw SVG Components ---
 const TerminalIcon = (props: any) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>;
 const ClockIcon = (props: any) => (
@@ -80,6 +81,29 @@ export default function Page() {
 
     fetchSessions();
   }, []);
+
+  // --- Celebration Logic ---
+  useEffect(() => {
+    if (!isLoaded || sessions.length === 0) return;
+    
+    const todayStr = getLocalDateString(new Date());
+    const todayHours = sessions
+      .filter(s => s.date.startsWith(todayStr))
+      .reduce((sum, s) => sum + s.hours, 0);
+
+    const celebratedKey = `celebrated_${todayStr}`;
+
+    // Only fire if > 6 hours and hasn't celebrated today yet
+    if (todayHours > 6) {
+      if (!localStorage.getItem(celebratedKey)) {
+        celebrate();
+        localStorage.setItem(celebratedKey, 'true');
+      }
+    } else {
+      // If we go back down to 6 or below, clear the flag so it can fire again!
+      localStorage.removeItem(celebratedKey);
+    }
+  }, [sessions, isLoaded]);
 
   const handleLogSession = async () => {
     if (!subject.trim() || !hours) return;
