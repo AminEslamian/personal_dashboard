@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Fetch all sessions for the authenticated user
 export async function GET() {
   try {
@@ -16,9 +18,9 @@ export async function GET() {
         hours,
         type,
         date,
-        subjects!inner (
+        subject:subjects!inner(
           name,
-          macros!inner (
+          macro:macros!inner(
             name
           )
         )
@@ -28,14 +30,16 @@ export async function GET() {
 
     if (error) throw error;
 
+    console.log("RAW SESSIONS:", JSON.stringify(sessions, null, 2));
+
     // Flatten the response for the frontend
     const formattedSessions = sessions.map((s: any) => ({
       id: s.id,
       hours: s.hours,
       type: s.type,
       date: s.date,
-      subject: s.subjects?.name,
-      macro: s.subjects?.macros?.name
+      subject: s.subject?.name,
+      macro: s.subject?.macro?.name
     }));
 
     return NextResponse.json(formattedSessions);
@@ -108,9 +112,9 @@ export async function POST(request: Request) {
         hours,
         type,
         date,
-        subjects!inner (
+        subject:subjects!inner(
           name,
-          macros!inner (
+          macro:macros!inner(
             name
           )
         )
@@ -125,8 +129,8 @@ export async function POST(request: Request) {
       hours: session.hours,
       type: session.type,
       date: session.date,
-      subject: session.subjects?.name,
-      macro: session.subjects?.macros?.name
+      subject: session.subject?.name,
+      macro: session.subject?.macro?.name
     };
 
     return NextResponse.json({ success: true, session: formattedSession });
