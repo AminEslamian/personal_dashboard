@@ -6,15 +6,39 @@ export async function GET() {
   try {
     const supabase = await createClient();
     
-    // RLS policies ensure that we only get sessions belonging to the authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { data: sessions, error } = await supabase
       .from('sessions')
-      .select('*')
+      .select(`
+        id,
+        hours,
+        type,
+        date,
+        subjects!inner (
+          name,
+          macros!inner (
+            name
+          )
+        )
+      `)
+      .eq('user_id', user.id)
       .order('date', { ascending: false });
 
     if (error) throw error;
 
-    return NextResponse.json(sessions);
+    // Flatten the response for the frontend
+    const formattedSessions = sessions.map((s: any) => ({
+      id: s.id,
+      hours: s.hours,
+      type: s.type,
+      date: s.date,
+      subject: s.subjects?.name,
+      macro: s.subjects?.macros?.name
+    }));
+
+    return NextResponse.json(formattedSessions);
   } catch (error: any) {
     console.error("API GET Error:", error.message);
     return NextResponse.json({ error: 'Failed to read data' }, { status: 500 });
@@ -27,18 +51,85 @@ export async function POST(request: Request) {
     const newSession = await request.json();
     const supabase = await createClient();
     
-    // Remove client-generated ID since Supabase uses a generated identity column
-    const { id, ...sessionData } = newSession;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { data, error } = await supabase
+    // 1. Find or create the Macro
+    let { data: macro } = await supabase
+      .from('macros')
+      .select('id')
+      .eq('name', newSession.macro)
+      .eq('user_id', user.id)
+      .single();
+
+    if (!macro) {
+      const { data: newMacro, error: macroError } = await supabase
+        .from('macros')
+        .insert({ name: newSession.macro, user_id: user.id })
+        .select('id')
+        .single();
+      if (macroError) throw macroError;
+      macro = newMacro;
+    }
+
+    // 2. Find or create the Subject
+    let { data: subject } = await supabase
+      .from('subjects')
+      .select('id')
+      .eq('name', newSession.subject)
+      .eq('macro_id', macro!.id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (!subject) {
+      const { data: newSubject, error: subjectError } = await supabase
+        .from('subjects')
+        .insert({ name: newSession.subject, macro_id: macro!.id, user_id: user.id })
+        .select('id')
+        .single();
+      if (subjectError) throw subjectError;
+      subject = newSubject;
+    }
+
+    // 3. Insert the Session
+    const sessionData = {
+      hours: newSession.hours,
+      type: newSession.type,
+      date: newSession.date,
+      subject_id: subject!.id,
+      user_id: user.id
+    };
+
+    const { data: session, error } = await supabase
       .from('sessions')
       .insert([sessionData])
-      .select()
+      .select(`
+        id,
+        hours,
+        type,
+        date,
+        subjects!inner (
+          name,
+          macros!inner (
+            name
+          )
+        )
+      `)
       .single();
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, session: data });
+    // Flatten for the frontend
+    const formattedSession = {
+      id: session.id,
+      hours: session.hours,
+      type: session.type,
+      date: session.date,
+      subject: session.subjects?.name,
+      macro: session.subjects?.macros?.name
+    };
+
+    return NextResponse.json({ success: true, session: formattedSession });
   } catch (error: any) {
     console.error("API POST Error:", error.message);
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
@@ -51,10 +142,14 @@ export async function DELETE(request: Request) {
     const { id } = await request.json();
     const supabase = await createClient();
     
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
     const { error } = await supabase
       .from('sessions')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
 
     if (error) throw error;
 
