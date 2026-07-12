@@ -18,9 +18,9 @@ export async function GET() {
         hours,
         type,
         date,
-        subject:subjects!inner(
+        subjects!inner(
           name,
-          macro:macros!inner(
+          macros!inner(
             name
           )
         )
@@ -34,8 +34,8 @@ export async function GET() {
 
     // Flatten the response for the frontend
     const formattedSessions = sessions.map((s: any) => {
-      const subj = Array.isArray(s.subject) ? s.subject[0] : s.subject;
-      const mac = Array.isArray(subj?.macro) ? subj.macro[0] : subj?.macro;
+      const subj = Array.isArray(s.subjects) ? s.subjects[0] : s.subjects;
+      const mac = Array.isArray(subj?.macros) ? subj.macros[0] : subj?.macros;
       return {
         id: s.id,
         hours: s.hours,
@@ -111,33 +111,19 @@ export async function POST(request: Request) {
     const { data: session, error } = await supabase
       .from('sessions')
       .insert([sessionData])
-      .select(`
-        id,
-        hours,
-        type,
-        date,
-        subject:subjects!inner(
-          name,
-          macro:macros!inner(
-            name
-          )
-        )
-      `)
+      .select('id')
       .single();
 
     if (error) throw error;
 
     // Flatten for the frontend
-    const subj = Array.isArray(session.subject) ? session.subject[0] : session.subject;
-    const mac = Array.isArray(subj?.macro) ? subj.macro[0] : subj?.macro;
-
     const formattedSession = {
       id: session.id,
-      hours: session.hours,
-      type: session.type,
-      date: session.date,
-      subject: subj?.name,
-      macro: mac?.name
+      hours: newSession.hours,
+      type: newSession.type,
+      date: newSession.date,
+      subject: newSession.subject,
+      macro: newSession.macro
     };
 
     return NextResponse.json({ success: true, session: formattedSession });
