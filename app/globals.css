@@ -63,8 +63,8 @@ body {
 
 /* Zap hover container - ELECTRIC */
 .zap-hover:hover .zap-icon {
-  stroke: #facc15; /* Tailwind Yellow 400 */
-  filter: drop-shadow(0 0 6px #facc15) drop-shadow(0 0 12px #eab308);
+  stroke: #06b6d4; /* Tailwind Cyan 500 */
+  filter: drop-shadow(0 0 6px #06b6d4) drop-shadow(0 0 12px #0891b2);
   animation: zapFlash 0.3s infinite;
 }
 
