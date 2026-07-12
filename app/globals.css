@@ -63,32 +63,18 @@ body {
 
 /* Zap hover container - ELECTRIC */
 .zap-hover:hover .zap-icon {
-  stroke: #22d3ee; /* Tailwind Cyan 400 */
-  filter: drop-shadow(0 0 6px #22d3ee) drop-shadow(0 0 12px #0891b2);
+  stroke: #facc15; /* Tailwind Yellow 400 */
+  filter: drop-shadow(0 0 6px #facc15) drop-shadow(0 0 12px #eab308);
+  animation: zapFlash 0.3s infinite;
 }
 
 /* Lightning flash animation */
 @keyframes zapFlash {
-  0% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-  30% {
-    transform: scale(1.15) rotate(6deg);
-    opacity: 0.9;
-  }
-  50% {
-    transform: scale(0.9) rotate(-6deg);
-    opacity: 1;
-  }
-  70% {
-    transform: scale(1.08) rotate(3deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
+  0% { transform: translateX(0) scale(1); }
+  25% { transform: translateX(-2px) scale(1.1); }
+  50% { transform: translateX(2px) scale(1.1); }
+  75% { transform: translateX(-2px) scale(1.1); }
+  100% { transform: translateX(0) scale(1); }
 }
 
 /* Clock hover container - TIME FLOW */
