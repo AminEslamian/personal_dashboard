@@ -46,11 +46,19 @@ const getLocalDateString = (dateObj: Date) => {
 };
 
 // // Add or modify macros here. The rest of the app will update automatically.
-const MACROS = [
+const DEFAULT_MACROS = [
   { name: 'Study', color: 'text-indigo-400 border-indigo-500/30', hex: '#6366f1' },
   { name: 'Investigation', color: 'text-emerald-400 border-emerald-500/30', hex: '#10b981' },
   { name: 'Work', color: 'text-amber-400 border-amber-500/30', hex: '#f59e0b' },
   { name: 'Auxiliary', color: 'text-zinc-400 border-zinc-500/30', hex: '#71717a' }, // 👈 NEW
+];
+
+const DYNAMIC_COLORS = [
+  { color: 'text-rose-400 border-rose-500/30', hex: '#fb7185' },
+  { color: 'text-cyan-400 border-cyan-500/30', hex: '#22d3ee' },
+  { color: 'text-fuchsia-400 border-fuchsia-500/30', hex: '#e879f9' },
+  { color: 'text-lime-400 border-lime-500/30', hex: '#a3e635' },
+  { color: 'text-orange-400 border-orange-500/30', hex: '#fb923c' },
 ];
 
 export default function Page() {
@@ -68,6 +76,20 @@ export default function Page() {
 
   const router = useRouter();
   const supabase = createClient();
+
+  // Dynamic Macros hook
+  const allMacros = React.useMemo(() => {
+    const presentMacroNames = Array.from(new Set(sessions.map(s => s.macro).filter(Boolean)));
+    const result = [...DEFAULT_MACROS];
+    presentMacroNames.forEach(name => {
+      if (!result.find(m => m.name === name)) {
+        const charSum = String(name).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+        const colorObj = DYNAMIC_COLORS[charSum % DYNAMIC_COLORS.length];
+        result.push({ name: String(name), ...colorObj });
+      }
+    });
+    return result;
+  }, [sessions]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -181,12 +203,12 @@ export default function Page() {
   };
 
   const getMacroColor = (cat: string) => {
-  return MACROS.find(m => m.name === cat)?.color || '';
-};
+    return allMacros.find(m => m.name === cat)?.color || 'text-zinc-400 border-zinc-500/30';
+  };
 
   const getMacroHex = (cat: string) => {
-  return MACROS.find(m => m.name === cat)?.hex || '#71717a';
-};
+    return allMacros.find(m => m.name === cat)?.hex || '#71717a';
+  };
 
   // --- DYNAMIC DATA CALCULATIONS ---
 
@@ -261,7 +283,7 @@ export default function Page() {
     
     const totals: Record<string, number> = {};
 
-    MACROS.forEach(m => {
+    allMacros.forEach(m => {
       totals[m.name] = 0;
     });
     let totalH = 0;
@@ -594,21 +616,28 @@ export default function Page() {
               {/* Macro Category Selection */}
               <div>
                 <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Macro Category</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {MACROS.map((cat) => (
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  {allMacros.map((cat) => (
                     <button
                       key={cat.name}
-                    onClick={() => setMacro(cat.name)}
-                    className={`py-2 rounded-lg text-xs font-medium transition-all border ${
-                      macro === cat.name
-                        ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                    }`}
+                      onClick={() => setMacro(cat.name)}
+                      className={`py-2 rounded-lg text-xs font-medium transition-all border ${
+                        macro === cat.name
+                          ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                      }`}
                     >
                       {cat.name}
                     </button>
                   ))}
                 </div>
+                <input
+                  type="text"
+                  value={macro}
+                  onChange={(e) => setMacro(e.target.value)}
+                  placeholder="Or type a new macro..."
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600"
+                />
               </div>
 
               {/* Subject Input */}

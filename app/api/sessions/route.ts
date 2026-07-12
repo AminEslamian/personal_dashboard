@@ -33,14 +33,18 @@ export async function GET() {
     console.log("RAW SESSIONS:", JSON.stringify(sessions, null, 2));
 
     // Flatten the response for the frontend
-    const formattedSessions = sessions.map((s: any) => ({
-      id: s.id,
-      hours: s.hours,
-      type: s.type,
-      date: s.date,
-      subject: s.subject?.name,
-      macro: s.subject?.macro?.name
-    }));
+    const formattedSessions = sessions.map((s: any) => {
+      const subj = Array.isArray(s.subject) ? s.subject[0] : s.subject;
+      const mac = Array.isArray(subj?.macro) ? subj.macro[0] : subj?.macro;
+      return {
+        id: s.id,
+        hours: s.hours,
+        type: s.type,
+        date: s.date,
+        subject: subj?.name,
+        macro: mac?.name
+      };
+    });
 
     return NextResponse.json(formattedSessions);
   } catch (error: any) {
@@ -64,7 +68,7 @@ export async function POST(request: Request) {
       .select('id')
       .eq('name', newSession.macro)
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!macro) {
       const { data: newMacro, error: macroError } = await supabase
@@ -83,7 +87,7 @@ export async function POST(request: Request) {
       .eq('name', newSession.subject)
       .eq('macro_id', macro!.id)
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!subject) {
       const { data: newSubject, error: subjectError } = await supabase
@@ -124,13 +128,16 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     // Flatten for the frontend
+    const subj = Array.isArray(session.subject) ? session.subject[0] : session.subject;
+    const mac = Array.isArray(subj?.macro) ? subj.macro[0] : subj?.macro;
+
     const formattedSession = {
       id: session.id,
       hours: session.hours,
       type: session.type,
       date: session.date,
-      subject: session.subject?.name,
-      macro: session.subject?.macro?.name
+      subject: subj?.name,
+      macro: mac?.name
     };
 
     return NextResponse.json({ success: true, session: formattedSession });
