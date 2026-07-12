@@ -623,7 +623,7 @@ export default function Page() {
                     type="date" 
                     value={logDate} 
                     onChange={(e) => setLogDate(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 transition-all [&::-webkit-calendar-picker-indicator]:invert"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 transition-all [&::-webkit-calendar-picker-indicator]:invert [color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -664,7 +664,7 @@ export default function Page() {
                         Done
                       </button>
                     </div>
-                    <div className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2 mb-3">
+                    <div className="space-y-3 max-h-48 overflow-y-auto pr-2 mb-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
                       {macrosList.map((cat) => (
                          <div key={cat.id} className="flex items-center gap-2">
                            <div className="relative w-8 h-8 rounded shrink-0 overflow-hidden border border-zinc-700">
