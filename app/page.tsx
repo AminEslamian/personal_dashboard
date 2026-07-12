@@ -20,6 +20,7 @@ const PlusIcon = (props: any) => <svg xmlns="http://www.w3.org/2000/svg" width="
 const CalendarIcon = (props: any) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
 const TrashIcon = (props: any) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
 const LogOutIcon = (props: any) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
+const SettingsIcon = (props: any) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
 // For study page reference:
 const StudyIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -45,26 +46,12 @@ const getLocalDateString = (dateObj: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-// // Add or modify macros here. The rest of the app will update automatically.
-const DEFAULT_MACROS = [
-  { name: 'Study', color: 'text-indigo-400 border-indigo-500/30', hex: '#6366f1' },
-  { name: 'Investigation', color: 'text-emerald-400 border-emerald-500/30', hex: '#10b981' },
-  { name: 'Work', color: 'text-amber-400 border-amber-500/30', hex: '#f59e0b' },
-  { name: 'Auxiliary', color: 'text-zinc-400 border-zinc-500/30', hex: '#71717a' }, // 👈 NEW
-];
-
-const DYNAMIC_COLORS = [
-  { color: 'text-rose-400 border-rose-500/30', hex: '#fb7185' },
-  { color: 'text-cyan-400 border-cyan-500/30', hex: '#22d3ee' },
-  { color: 'text-fuchsia-400 border-fuchsia-500/30', hex: '#e879f9' },
-  { color: 'text-lime-400 border-lime-500/30', hex: '#a3e635' },
-  { color: 'text-orange-400 border-orange-500/30', hex: '#fb923c' },
-];
-
 export default function Page() {
   // App State
   const [sessions, setSessions] = useState<any[]>([]);
+  const [macrosList, setMacrosList] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isManagingMacros, setIsManagingMacros] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   
   // Form State
@@ -77,20 +64,6 @@ export default function Page() {
   const router = useRouter();
   const supabase = createClient();
 
-  // Dynamic Macros hook
-  const allMacros = React.useMemo(() => {
-    const presentMacroNames = Array.from(new Set(sessions.map(s => s.macro).filter(Boolean)));
-    const result = [...DEFAULT_MACROS];
-    presentMacroNames.forEach(name => {
-      if (!result.find(m => m.name === name)) {
-        const charSum = String(name).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-        const colorObj = DYNAMIC_COLORS[charSum % DYNAMIC_COLORS.length];
-        result.push({ name: String(name), ...colorObj });
-      }
-    });
-    return result;
-  }, [sessions]);
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push('/login');
@@ -99,12 +72,21 @@ export default function Page() {
 
   // Load from local API on mount
   useEffect(() => {
-    const fetchSessions = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch('/api/sessions');
-        if (res.ok) {
-          const data = await res.json();
-          setSessions(data);
+        const [resSessions, resMacros] = await Promise.all([
+          fetch('/api/sessions'),
+          fetch('/api/macros')
+        ]);
+        if (resSessions.ok) {
+          setSessions(await resSessions.json());
+        }
+        if (resMacros.ok) {
+          const macrosData = await resMacros.json();
+          setMacrosList(macrosData);
+          if (macrosData.length > 0 && !macrosData.find((m: any) => m.name === macro)) {
+            setMacro(macrosData[0].name);
+          }
         }
       } catch (error) {
         console.error("Failed to boot telemetry:", error);
@@ -112,9 +94,43 @@ export default function Page() {
         setIsLoaded(true);
       }
     };
-
-    fetchSessions();
+    fetchData();
   }, []);
+
+  const handleAddMacro = async () => {
+    const tempId = Date.now().toString();
+    const newMacro = { id: tempId, name: 'New Macro', color: '#6366f1', is_archived: false };
+    setMacrosList([...macrosList, newMacro]);
+    const res = await fetch('/api/macros', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'New Macro', color: '#6366f1' })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setMacrosList(prev => prev.map(m => m.id === tempId ? data.macro : m));
+    }
+  };
+
+  const handleUpdateMacro = async (id: string, updates: any) => {
+    setMacrosList(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    await fetch('/api/macros', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...updates })
+    });
+  };
+
+  const handleArchiveMacro = async (id: string) => {
+    setMacrosList(prev => prev.filter(m => m.id !== id));
+    await fetch('/api/macros', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, is_archived: true })
+    });
+    const archivedMacroName = macrosList.find(m => m.id === id)?.name;
+    if (macro === archivedMacroName) setMacro(macrosList[0]?.name || '');
+  };
 
   // --- Celebration Logic ---
   useEffect(() => {
@@ -202,12 +218,8 @@ export default function Page() {
     }
   };
 
-  const getMacroColor = (cat: string) => {
-    return allMacros.find(m => m.name === cat)?.color || 'text-zinc-400 border-zinc-500/30';
-  };
-
   const getMacroHex = (cat: string) => {
-    return allMacros.find(m => m.name === cat)?.hex || '#71717a';
+    return macrosList.find(m => m.name === cat)?.color || '#71717a';
   };
 
   // --- DYNAMIC DATA CALCULATIONS ---
@@ -283,7 +295,7 @@ export default function Page() {
     
     const totals: Record<string, number> = {};
 
-    allMacros.forEach(m => {
+    macrosList.forEach(m => {
       totals[m.name] = 0;
     });
     let totalH = 0;
@@ -542,7 +554,7 @@ export default function Page() {
 
         {/* RECENT ARCHIVES */}
         <div className="bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-xl h-80 overflow-y-auto custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
-          <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-6">Recent Archives</h2>
+          <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-6">Recent Logs</h2>
           {sessions.length === 0 ? (
              <div className="flex items-center justify-center h-full text-zinc-500 text-sm pb-12">
                No sessions logged yet.
@@ -562,7 +574,10 @@ export default function Page() {
                   </button>
 
                   <div className="flex justify-between items-center mb-1">
-                    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm border bg-zinc-950 ${getMacroColor(session.macro)}`}>
+                    <span 
+                      className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm border bg-zinc-950"
+                      style={{ color: getMacroHex(session.macro), borderColor: getMacroHex(session.macro) + '4D' }}
+                    >
                       {session.macro}
                     </span>
                     <span className="text-xs text-zinc-500">
@@ -592,7 +607,7 @@ export default function Page() {
 
             <h2 className="text-xl font-bold text-zinc-100 mb-6 flex items-center gap-2">
               <TerminalIcon className="w-5 h-5 text-indigo-400" />
-              Archive New Session
+              Log Session
             </h2>
 
             <div className="space-y-5">
@@ -615,29 +630,58 @@ export default function Page() {
 
               {/* Macro Category Selection */}
               <div>
-                <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Macro Category</label>
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  {allMacros.map((cat) => (
-                    <button
-                      key={cat.name}
-                      onClick={() => setMacro(cat.name)}
-                      className={`py-2 rounded-lg text-xs font-medium transition-all border ${
-                        macro === cat.name
-                          ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                      }`}
-                    >
-                      {cat.name}
+                {!isManagingMacros ? (
+                  <>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">Macro Category</label>
+                      <button onClick={() => setIsManagingMacros(true)} className="text-zinc-500 hover:text-zinc-300 flex items-center gap-1 text-xs transition-colors">
+                        <SettingsIcon className="w-3.5 h-3.5" />
+                        Manage
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {macrosList.map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() => setMacro(cat.name)}
+                          className={`py-2 rounded-lg text-xs font-medium transition-all border ${
+                            macro === cat.name
+                              ? 'bg-zinc-800 text-zinc-100'
+                              : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                          }`}
+                          style={macro === cat.name ? { borderColor: cat.color, color: cat.color, backgroundColor: cat.color + '1A' } : {}}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">Manage Macros</label>
+                      <button onClick={() => setIsManagingMacros(false)} className="text-indigo-400 font-medium text-xs hover:text-indigo-300 transition-colors">
+                        Done
+                      </button>
+                    </div>
+                    <div className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2 mb-3">
+                      {macrosList.map((cat) => (
+                         <div key={cat.id} className="flex items-center gap-2">
+                           <div className="relative w-8 h-8 rounded shrink-0 overflow-hidden border border-zinc-700">
+                             <input type="color" value={cat.color || '#71717a'} onChange={(e) => handleUpdateMacro(cat.id, { color: e.target.value })} className="absolute inset-[-10px] w-12 h-12 cursor-pointer border-0 p-0" />
+                           </div>
+                           <input type="text" value={cat.name} onChange={(e) => handleUpdateMacro(cat.id, { name: e.target.value })} className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-sm text-zinc-100 focus:outline-none focus:border-indigo-500/50" />
+                           <button onClick={() => handleArchiveMacro(cat.id)} className="text-zinc-600 hover:text-red-400 p-1.5 shrink-0 transition-colors">
+                              <TrashIcon className="w-4 h-4" />
+                           </button>
+                         </div>
+                      ))}
+                    </div>
+                    <button onClick={handleAddMacro} className="w-full border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-300 hover:border-zinc-500 py-2.5 rounded-lg text-xs font-medium transition-all">
+                      + Add New Macro
                     </button>
-                  ))}
-                </div>
-                <input
-                  type="text"
-                  value={macro}
-                  onChange={(e) => setMacro(e.target.value)}
-                  placeholder="Or type a new macro..."
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600"
-                />
+                  </>
+                )}
               </div>
 
               {/* Subject Input */}
@@ -678,7 +722,7 @@ export default function Page() {
                 className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all flex justify-center items-center gap-2"
               >
                 <ClockIcon className="w-5 h-5" />
-                Commit Archive
+                Commit Log
               </button>
             </div>
 

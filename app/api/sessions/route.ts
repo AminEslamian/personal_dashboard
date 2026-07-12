@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     if (!macro) {
       const { data: newMacro, error: macroError } = await supabase
         .from('macros')
-        .insert({ name: newSession.macro, user_id: user.id })
+        .insert({ name: newSession.macro, user_id: user.id, color: '#6366f1' })
         .select('id')
         .single();
       if (macroError) throw macroError;
