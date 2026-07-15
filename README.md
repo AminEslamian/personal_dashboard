@@ -1,5 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
+- This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+- The document provides minor instructions on how to run your own fork of this project locally or remotely (by using Vercel), You can Also access the online version of this project via [tracker.amineslamian.ir
+](https://tracker.amineslamian.ir/) in order to monitor your activity (e.g., study, work, etc.).
 ## Getting Started
 
 First, run the development server:
