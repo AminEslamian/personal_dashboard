@@ -78,7 +78,7 @@ export default function StudyPage() {
     }, {});
 
   const lessons = Object.entries(studySessions)
-    .map(([name, hours]) => ({ name, hours }))
+    .map(([name, hours]) => ({ name, hours: Math.round(hours * 100) / 100 }))
     .sort((a, b) => b.hours - a.hours); // descending by hours
 
   const totalStudyHours = lessons.reduce((sum, l) => sum + l.hours, 0);

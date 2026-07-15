@@ -137,9 +137,9 @@ export default function Page() {
     if (!isLoaded || sessions.length === 0) return;
     
     const todayStr = getLocalDateString(new Date());
-    const todayHours = sessions
+    const todayHours = Math.round(sessions
       .filter(s => s.date.startsWith(todayStr))
-      .reduce((sum, s) => sum + s.hours, 0);
+      .reduce((sum, s) => sum + s.hours, 0) * 100) / 100;
 
     const celebratedKey = `celebrated_${todayStr}`;
 
@@ -334,9 +334,9 @@ export default function Page() {
       const dateString = getLocalDateString(d);
       const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
       
-      const hoursLogged = sessions
+      const hoursLogged = Math.round(sessions
         .filter(s => s.date.startsWith(dateString))
-        .reduce((sum, s) => sum + s.hours, 0);
+        .reduce((sum, s) => sum + s.hours, 0) * 100) / 100;
 
       days.push({ day: dayName, hours: hoursLogged });
     }
@@ -353,9 +353,9 @@ export default function Page() {
       d.setDate(d.getDate() - i);
       const dateString = getLocalDateString(d);
       
-      const hours = sessions
+      const hours = Math.round(sessions
         .filter(s => s.date.startsWith(dateString))
-        .reduce((sum, s) => sum + s.hours, 0);
+        .reduce((sum, s) => sum + s.hours, 0) * 100) / 100;
       
       let level = 0;
       if (hours > 0 && hours <= 2) level = 1;
